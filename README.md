@@ -2,28 +2,27 @@
 
 This is a sample project demonstrating a Dockerized FastAPI application with a simple CRUD API backed by SQLite.
 
-## Features
-- **FastAPI**: High-performance web framework for building APIs.
-- **SQLAlchemy**: ORM for database interactions.
-- **SQLite**: Lightweight, file-based database.
-- **Docker**: Containerized deployment for consistency.
-- **Pytest**: Automated testing for API endpoints.
-- **GitHub Actions**: CI pipeline to run tests on every push.
+## 🚀 Quick Start
 
-## Quick Start
+### ⚠️ Important: Build Before Running
+Before you can run the application or the tests, you **must** build the Docker image. If you get an error like `Unable to find image... locally` or `repository does not exist`, it means you skipped this step.
 
-### 1. Build the Docker image
+#### 1. Build the Docker image
+Run this command from the project root:
 ```bash
 docker build -t fastapi-crud-app .
 ```
 
-### 2. Run the container
+#### 2. Run the container
+Once the build is finished, start the app:
 ```bash
 docker run -p 8000:8000 fastapi-crud-app
 ```
 The API will be available at `http://localhost:8000`. You can access the interactive API documentation (Swagger UI) at `http://localhost:8000/docs`.
 
-## API Endpoints
+---
+
+## 🛠 API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -35,14 +34,18 @@ The API will be available at `http://localhost:8000`. You can access the interac
 | PUT | `/items/{id}` | Update an existing item |
 | DELETE | `/items/{id}` | Delete an item |
 
-## Testing
+---
+
+## 🧪 Testing
 
 ### Run tests using Docker
+**Note:** Ensure you have built the image using `docker build -t fastapi-crud-app .` first.
+
 ```bash
 docker run --rm -e PYTHONPATH=. fastapi-crud-app pytest
 ```
 
-### Run tests locally
+### Run tests locally (without Docker)
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
@@ -51,6 +54,15 @@ docker run --rm -e PYTHONPATH=. fastapi-crud-app pytest
    ```bash
    pytest
    ```
+
+---
+
+## ⚙️ Technical Details
+- **FastAPI**: High-performance web framework.
+- **SQLAlchemy**: ORM for database interactions.
+- **SQLite**: Lightweight, file-based database (auto-generated as `test.db` on startup).
+- **Docker**: Containerized deployment.
+- **GitHub Actions**: CI pipeline to run tests on every push.
 
 ## CI/CD
 This project uses GitHub Actions to automatically run the test suite on every push or pull request to the `main` branch.
