@@ -1,8 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from pydantic import BaseModel
+from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
 # Database Setup
@@ -26,9 +25,7 @@ class ItemCreate(BaseModel):
 
 class ItemResponse(ItemCreate):
     id: int
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Dependency
 def get_db():
