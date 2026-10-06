@@ -1,0 +1,60 @@
+name: Deploy to Code Engine
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      IBM_CLOUD_REGION: ${{ secrets.IBM_CLOUD_REGION }}
+      IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+      ICR_NAMESPACE: ${{ secrets.ICR_NAMESPACE }} # ICRのネームスペース
+      APP_NAME: fastapi-docker-sample
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Log in to IBM Cloud
+        run: |
+          # IBM Cloud CLI のインストールとログイン
+          curl -fsSL https://st.cloud.ibm.com/install/ubuntu -o install-ibmcloud.sh
+          chmod +x install-ibmcloud.sh
+          ./install-ibmcloud.sh
+          ibmcloud target -r $IBM_CLOUD_REGION
+          ibmcloud login --apikey $IBM_CLOUD_API_KEY -r $IBM_CLOUD_REGION
+
+      - name: Log in to IBM Cloud Container Registry
+          # ICR へのログイン (Docker login)
+        run: |
+          ibmcloud cr login
+
+      - name: Build and Push Docker Image
+        run: |
+          # Git SHA をタグとして利用して不変性を確保
+          TAG=$(git rev-parse --short HEAD)
+          IMAGE_NAME=icr.io/$ICR_NAMESPACE/$APP_NAME:$TAG
+          
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+          
+          # 次のステップで利用するためにイメージ名を保存
+          echo "CE_IMAGE=$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: Terraform Apply
+        run: |
+          # 変数を上書きして適用 (TF_VAR_形式で渡す)
+          export TF_VAR_ibm_cloud_api_key=$IBM_CLOUD_API_KEY
+          export TF_VAR_ibm_cloud_region=$IBM_CLOUD_REGION
+          export TF_VAR_ce_image=$CE_IMAGE
+          export TF_VAR_ce_project_name=fastapi-sample-project
+          export TF_VAR_ce_app_name=fastapi-sample-app
+          
+          terraform init
+          terraform apply -auto-approve
